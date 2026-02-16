@@ -129,6 +129,130 @@ curl /supabase/rest/v1/tabela \
 
 Fallback catch-all. Qualquer rota que nao case com os handlers acima e direcionada ao SilverBullet (porta 15050).
 
+## Guia: Adicionar Novo Servico ao Caddy
+
+Sempre que um novo container Docker precisar ser exposto via Caddy, seguir este checklist na ordem.
+
+### Passo 1: Diagnosticar o app
+
+Subir o container e testar diretamente na porta local:
+
+```bash
+# 1a. Verificar a resposta raiz
+curl -sI http://localhost:<PORTA>/
+
+# 1b. Se redireciona, seguir o redirect e pegar o HTML
+curl -s http://localhost:<PORTA>/<PATH_FINAL>/ | head -50
+
+# 1c. Analisar os paths dos assets no HTML
+curl -s http://localhost:<PORTA>/<PATH_FINAL>/ | grep -oP '(href|src)="[^"]*"' | head -15
+```
+
+Classificar os assets:
+
+| Tipo de path | Exemplo | Compativel com handle_path? |
+|:---|:---|:---|
+| **Relativo** | `_nuxt/entry.css`, `assets/index.js` | Sim, funciona direto |
+| **Absoluto com prefixo proprio** | `/dashboard/assets/index.js` | Parcial, precisa rota extra |
+| **Absoluto na raiz** | `/assets/index.js`, `/_next/static/...` | Nao, precisa de base path no app |
+
+### Passo 2: Verificar configuracao de base path
+
+Procurar se o app suporta variavel de ambiente para subpath:
+
+```bash
+# Checar documentacao do app por variaveis como:
+# BASE_PATH, BASE_URL, PUBLIC_PATH, APP_PATH, SUBPATH, etc.
+
+# Para apps Next.js: NEXT_PUBLIC_BASE_PATH (precisa ser definido no build)
+# Para apps Nuxt: NUXT_APP_BASE_URL, cdnURL
+# Para n8n: N8N_PATH
+```
+
+Se o app **tem** variavel de base path:
+- Definir no docker-compose (ex: `N8N_PATH=/nome/`)
+- Usar `handle_path /nome*` no Caddy (strip prefix)
+- O app gera links com prefixo, Caddy remove antes de enviar
+
+Se o app **nao tem** variavel de base path:
+- Verificar se os assets usam paths relativos (funciona com handle_path)
+- Se usam paths absolutos, avaliar rota extra no Caddy ou acesso direto na porta
+
+### Passo 3: Verificar redirects
+
+```bash
+curl -sI http://localhost:<PORTA>/ | grep Location
+```
+
+Se o app redireciona (ex: `/` -> `/dashboard`):
+- O redirect usa path absoluto e vai perder o prefixo do Caddy
+- Adicionar `redir` no Caddyfile para a rota raiz:
+
+```caddy
+@nome_root path /nome /nome/
+redir @nome_root /nome/<destino>/ 307
+```
+
+### Passo 4: Configurar o Caddyfile
+
+Modelo base:
+```caddy
+# <Nome do Servico>
+handle_path /nome* {
+    reverse_proxy localhost:<PORTA>
+}
+```
+
+Se precisar de flush para SSE/WebSocket:
+```caddy
+handle_path /nome* {
+    reverse_proxy localhost:<PORTA> {
+        flush_interval -1
+        header_up X-Forwarded-Host {host}
+    }
+}
+```
+
+Se o app tem assets com paths absolutos que nao podem ser configurados:
+```caddy
+# Rota extra para assets absolutos do <servico>
+handle /<path_absoluto_dos_assets>* {
+    reverse_proxy localhost:<PORTA>
+}
+```
+
+**Importante:** Posicionar `handle` e `handle_path` ANTES do fallback do SilverBullet.
+
+### Passo 5: Validar a cadeia completa
+
+```bash
+# 5a. Copiar e recarregar
+sudo cp Caddyfile /etc/caddy/Caddyfile
+sudo caddy validate --config /etc/caddy/Caddyfile
+sudo systemctl reload caddy
+
+# 5b. Testar redirect da raiz
+curl -sI http://localhost/nome/
+
+# 5c. Testar HTML do dashboard/app
+curl -s http://localhost/nome/<path>/ | head -10
+
+# 5d. Testar carregamento de assets (pegar um src/href do HTML)
+curl -sI http://localhost/nome/<path>/<asset>
+
+# 5e. Se houver rota extra de assets absolutos, testar tambem
+curl -sI http://localhost/<asset_absoluto>
+```
+
+Todos devem retornar 200 (ou 307 para redirects). Se algum asset retorna 404, verificar se esta caindo no SilverBullet (header `Via: 1.1 Caddy` sem o servico correto).
+
+### Passo 6: Documentar
+
+Atualizar este README:
+1. Adicionar na tabela "Servicos Roteados"
+2. Adicionar na tabela "URLs de Acesso"
+3. Criar secao em "Detalhes Tecnicos por Servico" explicando a estrategia usada
+
 ## Instalacao e Configuracao
 
 ### 1. Instalar Caddy (Fedora)
