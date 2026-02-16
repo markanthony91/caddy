@@ -1,0 +1,4 @@
+# Configuração simplificada para o SilverBullet
+http://fedora.taild42ed2.ts.net, http://localhost {
+    reverse_proxy localhost:15050
+}
