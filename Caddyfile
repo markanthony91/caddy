@@ -3,7 +3,7 @@
 }
 
 http://fedora.taild42ed2.ts.net, http://localhost {
-    
+
     # n8n Automations (N8N_PATH=/n8n/ + strip prefix)
     handle_path /n8n* {
         reverse_proxy localhost:15678 {
@@ -12,19 +12,32 @@ http://fedora.taild42ed2.ts.net, http://localhost {
         }
     }
 
+    # Qdrant - redirect raiz para dashboard
+    @qdrant_root path /qdrant /qdrant/
+    redir @qdrant_root /qdrant/dashboard 307
+
+    # Qdrant API + Dashboard
+    handle_path /qdrant* {
+        reverse_proxy localhost:16333
+    }
+
+    # Qdrant Dashboard assets (HTML usa paths absolutos /dashboard/...)
+    handle /dashboard* {
+        reverse_proxy localhost:16333
+    }
+
+    # NocoDB - redirect raiz para dashboard
+    @nocodb_root path /nocodb /nocodb/
+    redir @nocodb_root /nocodb/dashboard/ 307
+
     # NocoDB
     handle_path /nocodb* {
         reverse_proxy localhost:18080
     }
 
-    # Qdrant
-    handle_path /qdrant* {
-        reverse_proxy localhost:16333
-    }
-
-    # Supabase Studio
+    # Supabase Kong API Gateway
     handle_path /supabase* {
-        reverse_proxy localhost:54323
+        reverse_proxy localhost:54321
     }
 
     # SilverBullet (Fallback)
