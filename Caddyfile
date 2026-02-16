@@ -1,4 +1,25 @@
 # Configuração simplificada para o SilverBullet
 http://fedora.taild42ed2.ts.net, http://localhost {
+    # SilverBullet
     reverse_proxy localhost:15050
+
+    # n8n
+    handle_path /n8n* {
+        reverse_proxy localhost:15678
+    }
+
+    # NocoDB (Airtable Alternative)
+    handle_path /nocodb* {
+        reverse_proxy localhost:18080
+    }
+
+    # Qdrant (Vector DB)
+    handle_path /qdrant* {
+        reverse_proxy localhost:16333
+    }
+
+    # RAGFlow (Pipeline RAG)
+    handle_path /ragflow* {
+        reverse_proxy localhost:80
+    }
 }
