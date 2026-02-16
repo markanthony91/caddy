@@ -19,10 +19,10 @@ O objetivo inicial foi criar um **Jardim Digital** (baseado em Markdown) acessí
 [ Tailscale Serve ] 
       │
       ▼ (Porta 80 Interna)
-[ Caddy Server ]
+[ Caddy Server (Host) ]
       │
-      ▼ (Porta 15050)
-[ SilverBullet Docker ]
+      ▼ (Porta 15050 / 15678)
+[ Containers na rede fedora-net ]
 ```
 
 ## 🛠️ Implementação Técnica
