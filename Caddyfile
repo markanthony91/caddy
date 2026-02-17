@@ -4,33 +4,26 @@
 
 http://fedora.taild42ed2.ts.net, http://localhost {
 
-    # n8n Automations (N8N_PATH=/n8n/ + strip prefix)
+    # n8n Automations (Restaurado para Reverse Proxy - Funcional)
     handle_path /n8n* {
         reverse_proxy localhost:15678 {
             flush_interval -1
-            header_up X-Forwarded-Host {host}
         }
     }
 
-    # Qdrant - redirect raiz para dashboard
+    # Qdrant
     @qdrant_root path /qdrant /qdrant/
     redir @qdrant_root /qdrant/dashboard 307
-
-    # Qdrant API + Dashboard
     handle_path /qdrant* {
         reverse_proxy localhost:16333
     }
-
-    # Qdrant Dashboard assets (HTML usa paths absolutos /dashboard/...)
     handle /dashboard* {
         reverse_proxy localhost:16333
     }
 
-    # NocoDB - redirect raiz para dashboard
+    # NocoDB
     @nocodb_root path /nocodb /nocodb/
     redir @nocodb_root /nocodb/dashboard/ 307
-
-    # NocoDB
     handle_path /nocodb* {
         reverse_proxy localhost:18080
     }
@@ -40,12 +33,28 @@ http://fedora.taild42ed2.ts.net, http://localhost {
         reverse_proxy localhost:15500
     }
 
-    # Supabase Kong API Gateway
+    # Dashboard Central (Homarr)
+    handle_path /start* {
+        reverse_proxy localhost:17500
+    }
+
+    # Atalhos para Apps que não suportam subpaths (Redirecionamento de Porta)
+    redir /monitor /monitor/
+    handle /monitor/ {
+        redir http://{host}:8090
+    }
+
+    redir /backup /backup/
+    handle /backup/ {
+        redir http://{host}:51515
+    }
+
+    # Supabase Kong
     handle_path /supabase* {
         reverse_proxy localhost:54321
     }
 
-    # SilverBullet (Fallback)
+    # SilverBullet (Fallback Final)
     handle {
         reverse_proxy localhost:15050
     }
