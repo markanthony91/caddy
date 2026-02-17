@@ -4,7 +4,7 @@
 
 http://fedora.taild42ed2.ts.net, http://localhost {
 
-    # n8n Automations (Restaurado para Reverse Proxy - Funcional)
+    # n8n Automations
     handle_path /n8n* {
         reverse_proxy localhost:15678 {
             flush_interval -1
@@ -33,12 +33,12 @@ http://fedora.taild42ed2.ts.net, http://localhost {
         reverse_proxy localhost:15500
     }
 
-    # Dashboard Central (Homarr)
-    handle_path /start* {
-        reverse_proxy localhost:17500
+    # Atalhos amigáveis (Redirecionamento de Porta)
+    redir /start /start/
+    handle /start/ {
+        redir http://{host}:17500
     }
 
-    # Atalhos para Apps que não suportam subpaths (Redirecionamento de Porta)
     redir /monitor /monitor/
     handle /monitor/ {
         redir http://{host}:8090
