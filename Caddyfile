@@ -35,6 +35,11 @@ http://fedora.taild42ed2.ts.net, http://localhost {
         reverse_proxy localhost:18080
     }
 
+    # Kopia Backup Server
+    handle /kopia* {
+        reverse_proxy localhost:51515
+    }
+
     # Gerenciador Financeiro
     handle_path /financeiro* {
         reverse_proxy localhost:15500
@@ -49,9 +54,4 @@ http://fedora.taild42ed2.ts.net, http://localhost {
     handle {
         reverse_proxy localhost:15050
     }
-}
-
-# Bloco dedicado para o Kopia Backup
-http://kopia.fedora.taild42ed2.ts.net {
-    reverse_proxy localhost:51515
 }
