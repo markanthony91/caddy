@@ -40,6 +40,11 @@ http://fedora.taild42ed2.ts.net, http://localhost {
         reverse_proxy localhost:15500
     }
 
+    # Kopia Backup Server
+    handle_path /kopia* {
+        reverse_proxy localhost:51515
+    }
+
     # Supabase Kong API Gateway
     handle_path /supabase* {
         reverse_proxy localhost:54321
