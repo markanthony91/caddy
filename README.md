@@ -21,26 +21,44 @@ Configuracao centralizada do **Caddy Server** como proxy reverso para todos os s
 
 | Rota Caddy | Servico | Porta Local | Tipo |
 |:---|:---|:---|:---|
-| `/n8n/*` | n8n Editor | 15678 | `handle_path` (strip prefix) |
-| `/qdrant/*` | Qdrant API + Dashboard | 16333 | `handle_path` (strip prefix) |
-| `/dashboard/*` | Qdrant Dashboard assets | 16333 | `handle` (sem strip) |
-| `/nocodb/*` | NocoDB | 18080 | `handle_path` (strip prefix) |
-| `/supabase/*` | Supabase Kong API Gateway | 54321 | `handle_path` (strip prefix) |
-| `/*` (fallback) | SilverBullet | 15050 | `handle` (catch-all) |
+| `/` | Homarr Dashboard | 17500 | `handle` (Raiz) |
+| `/notes/*` | SilverBullet | 15050 | `handle` |
+| `/portainer/*` | Portainer | 9000 | `handle_path` |
+| `/n8n/*` | n8n Editor | 15678 | `handle_path` |
+| `/qdrant/*` | Qdrant API + Dashboard | 16333 | `handle_path` |
+| `/nocodb/*` | NocoDB | 18080 | `handle_path` |
+| `/financeiro/*` | Gerenciador Financeiro | 15500 | `handle_path` |
+| `/supabase/*` | Supabase Kong API Gateway | 54321 | `handle_path` |
 
 ### URLs de Acesso
 
 | Servico | URL |
 |:---|:---|
-| SilverBullet | `https://fedora.taild42ed2.ts.net/` |
+| **Homarr (Início)** | `https://fedora.taild42ed2.ts.net/` |
+| **Portainer** | `https://fedora.taild42ed2.ts.net/portainer/` |
+| **SilverBullet** | `https://fedora.taild42ed2.ts.net/notes/` |
 | n8n | `https://fedora.taild42ed2.ts.net/n8n/` |
 | Qdrant Dashboard | `https://fedora.taild42ed2.ts.net/qdrant/dashboard` |
-| Qdrant API | `https://fedora.taild42ed2.ts.net/qdrant/collections` |
+| Financeiro | `https://fedora.taild42ed2.ts.net/financeiro/` |
 | NocoDB | `https://fedora.taild42ed2.ts.net/nocodb/` |
-| Supabase REST API | `https://fedora.taild42ed2.ts.net/supabase/rest/v1/` |
-| Supabase Studio | `http://localhost:54323` (acesso direto, sem Caddy) |
 
 ## Detalhes Tecnicos por Servico
+
+### Homarr (Dashboard)
+**Estrategia:** `handle` na raiz `/`
+
+Promovido para a raiz do domínio para servir como portal de entrada. Redireciona internamente para a porta 17500.
+
+### SilverBullet (Notas)
+**Estrategia:** `handle /notes*`
+
+Movido da raiz para `/notes` para resolver conflitos de **Service Worker**. O SW do SilverBullet interceptava todas as requisições na raiz, quebrando outros apps.
+*Correção:* Mover app + Limpar SW em `chrome://serviceworker-internals/`.
+
+### Portainer
+**Estrategia:** `handle_path /portainer*`
+
+Proxy reverso padrão para a porta 9000. Requer que o Portainer seja acessado via HTTPS (9443) ou HTTP (9000). O Caddy cuida do SSL.
 
 ### n8n
 
