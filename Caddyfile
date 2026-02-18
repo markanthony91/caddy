@@ -2,7 +2,7 @@
     debug
 }
 
-fedora.taild42ed2.ts.net, http://localhost {
+http://fedora.taild42ed2.ts.net, http://localhost {
 
     # n8n Automations
     handle_path /n8n* {
@@ -34,13 +34,15 @@ fedora.taild42ed2.ts.net, http://localhost {
     }
 
     # Gerenciador Financeiro
+    @financeiro_root path /financeiro
+    redir @financeiro_root /financeiro/
     handle_path /financeiro* {
         reverse_proxy localhost:15500
     }
 
-    # Homarr Dashboard
-    handle_path /start* {
-        reverse_proxy localhost:17500
+    # SilverBullet (com SB_URL_PREFIX=/notes)
+    handle /notes* {
+        reverse_proxy localhost:15050
     }
 
     # Atalhos amigáveis (Redirecionamento de Porta)
@@ -59,8 +61,8 @@ fedora.taild42ed2.ts.net, http://localhost {
         reverse_proxy localhost:54321
     }
 
-    # SilverBullet (Fallback Final)
+    # Homarr Dashboard (Fallback - Página Inicial)
     handle {
-        reverse_proxy localhost:15050
+        reverse_proxy localhost:17500
     }
 }
