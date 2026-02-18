@@ -45,20 +45,37 @@ http://fedora.taild42ed2.ts.net, http://localhost {
         reverse_proxy localhost:15050
     }
 
-    # Atalhos amigáveis (Redirecionamento de Porta)
-    redir /monitor /monitor/
-    handle /monitor/ {
-        redir http://{host}:8090
+    # Beszel Monitor (proxy reverso - não mais redirect direto para porta)
+    @monitor_root path /monitor /monitor/
+    redir @monitor_root /monitor/
+    handle_path /monitor* {
+        reverse_proxy localhost:8090
     }
 
-    redir /backup /backup/
-    handle /backup/ {
-        redir http://{host}:51515
+    # Kopia Backup (proxy reverso - não mais redirect direto para porta)
+    @backup_root path /backup /backup/
+    redir @backup_root /backup/
+    handle_path /backup* {
+        reverse_proxy localhost:51515
     }
 
-    # Supabase Kong
+    # Dozzle (Docker Logs)
+    @dozzle_root path /dozzle /dozzle/
+    redir @dozzle_root /dozzle/
+    handle_path /dozzle* {
+        reverse_proxy localhost:8888
+    }
+
+    # Supabase Kong (API)
     handle_path /supabase* {
         reverse_proxy localhost:54321
+    }
+
+    # Supabase Studio (UI)
+    @supabase_studio_root path /supabase-studio /supabase-studio/
+    redir @supabase_studio_root /supabase-studio/
+    handle_path /supabase-studio* {
+        reverse_proxy localhost:54323
     }
 
     # Homarr Dashboard (Fallback - Página Inicial)
