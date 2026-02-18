@@ -45,20 +45,6 @@ http://fedora.taild42ed2.ts.net, http://localhost {
         reverse_proxy localhost:15050
     }
 
-    # Beszel Monitor
-    @monitor_no_slash path /monitor
-    redir @monitor_no_slash /monitor/ 301
-    handle_path /monitor* {
-        reverse_proxy localhost:8090
-    }
-
-    # Kopia Backup
-    @backup_no_slash path /backup
-    redir @backup_no_slash /backup/ 301
-    handle_path /backup* {
-        reverse_proxy localhost:51515
-    }
-
     # Dozzle (Docker Logs)
     @dozzle_no_slash path /dozzle
     redir @dozzle_no_slash /dozzle/ 301
