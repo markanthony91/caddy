@@ -45,35 +45,35 @@ http://fedora.taild42ed2.ts.net, http://localhost {
         reverse_proxy localhost:15050
     }
 
-    # Beszel Monitor (proxy reverso - não mais redirect direto para porta)
-    @monitor_root path /monitor /monitor/
-    redir @monitor_root /monitor/
+    # Beszel Monitor
+    @monitor_no_slash path /monitor
+    redir @monitor_no_slash /monitor/ 301
     handle_path /monitor* {
         reverse_proxy localhost:8090
     }
 
-    # Kopia Backup (proxy reverso - não mais redirect direto para porta)
-    @backup_root path /backup /backup/
-    redir @backup_root /backup/
+    # Kopia Backup
+    @backup_no_slash path /backup
+    redir @backup_no_slash /backup/ 301
     handle_path /backup* {
         reverse_proxy localhost:51515
     }
 
     # Dozzle (Docker Logs)
-    @dozzle_root path /dozzle /dozzle/
-    redir @dozzle_root /dozzle/
+    @dozzle_no_slash path /dozzle
+    redir @dozzle_no_slash /dozzle/ 301
     handle_path /dozzle* {
         reverse_proxy localhost:8888
     }
 
     # Supabase Kong (API)
-    handle_path /supabase* {
+    handle_path /supabase/* {
         reverse_proxy localhost:54321
     }
 
     # Supabase Studio (UI)
-    @supabase_studio_root path /supabase-studio /supabase-studio/
-    redir @supabase_studio_root /supabase-studio/
+    @supabase_studio_no_slash path /supabase-studio
+    redir @supabase_studio_no_slash /supabase-studio/ 301
     handle_path /supabase-studio* {
         reverse_proxy localhost:54323
     }
